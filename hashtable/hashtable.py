@@ -23,7 +23,7 @@ class HashTable:
 
     def __init__(self, capacity):
         self.capacity = capacity
-        self.hash = [None] * capacity
+        self.table = [None] * capacity
         self.size = 0
 
     def get_num_slots(self):
@@ -36,7 +36,7 @@ class HashTable:
 
         Implement this.
         """
-        return len(self.hash)
+        return len(self.table)
 
     def get_load_factor(self):
         """
@@ -55,8 +55,17 @@ class HashTable:
 
         Implement this, and/or DJB2.
         """
+        FNV_prime = 1099511628211
+        FNV_offset_basis = 14695981039346656037
 
-        # Your code here
+        hashed = FNV_offset_basis
+
+        string = key.encode()
+
+        for char in string:
+            hashed = hashed * FNV_prime
+            hashed = hashed ^ char
+        return hashed
 
     def djb2(self, key):
         """
@@ -64,7 +73,10 @@ class HashTable:
 
         Implement this, and/or FNV-1.
         """
-        # Your code here
+        hash = 5381
+        for i in key:
+            hash = (hash * 33) + ord(i)
+        return hash
 
     def hash_index(self, key):
         """
@@ -82,7 +94,20 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+
+        # find the index for the key in the table
+        # looks for a node with key in the array/LL
+        # if there is none, add a node with the key and value to the array/LL
+        idx = self.hash_index(key)
+        node = HashTableEntry(key, value)
+        table = self.table[idx]
+        self.size += 1
+
+        if table:
+            self.table[idx] = node
+            self.table[idx].next = table
+        else:
+            self.table[idx] = node
 
     def delete(self, key):
         """
@@ -92,7 +117,8 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+        self.put(key, None)
+        self.size -= 1
 
     def get(self, key):
         """
@@ -102,7 +128,18 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+        # Looks for a node with key in the arr/LL
+        # Returns the value in that node, if there is no
+        # such node, return None.
+
+        idx = self.hash_index(key)
+        table = self.table[idx]
+
+        while table:
+            if table.key == key:
+                return table.value
+            table = table.next
+        return None
 
     def resize(self, new_capacity):
         """
@@ -111,7 +148,18 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+        old_table = self.table
+        old_capacity = self.capacity
+
+        self.table = [None] * new_capacity
+        self.capacity = new_capacity
+
+        for idx in range(old_capacity):
+            old = old_table[idx]
+
+            while old != None:
+                self.put(old.key, old.value)
+                old = old.next
 
 
 if __name__ == "__main__":
