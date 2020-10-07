@@ -7,13 +7,20 @@
 
 def no_dups(s):
     # Your code here
+    # instantiate dict
     cache = {}
+    # store strings in a list
     words = []
 
+    # for our values that are returned after
+    # splitting the words in the string
     for word in s.split():
+        # if our word isn't in the cache
         if word not in cache:
+            # add it to the cache and append it to the list
             cache[word] = 1
             words.append(word)
+    # our return is an empty string joined by the word strings in the list
     return " ".join(words)
 
 
