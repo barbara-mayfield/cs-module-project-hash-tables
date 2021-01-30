@@ -2,6 +2,7 @@ class HashTableEntry:
     """
     Linked List hash table key/value pair
     """
+
     def __init__(self, key, value):
         self.key = key
         self.value = value
@@ -21,8 +22,9 @@ class HashTable:
     """
 
     def __init__(self, capacity):
-        # Your code here
-
+        self.capacity = capacity
+        self.table = [None] * capacity
+        self.size = 0
 
     def get_num_slots(self):
         """
@@ -35,16 +37,20 @@ class HashTable:
         Implement this.
         """
         # Your code here
-
+        return len(self.table)
 
     def get_load_factor(self):
         """
         Return the load factor for this hash table.
 
         Implement this.
-        """
-        # Your code here
 
+        The load factor is the # of keys stored in the hash table divided by
+        the capacity. 
+
+        The size should be chosen so that the load factor is less than 1.
+        """
+        return self.size / self.get_num_slots()
 
     def fnv1(self, key):
         """
@@ -52,9 +58,17 @@ class HashTable:
 
         Implement this, and/or DJB2.
         """
+        FNV_prime = 1099511628211
+        FNV_offset_basis = 14695981039346656037
 
-        # Your code here
+        hashed = FNV_offset_basis
 
+        string = key.encode()
+
+        for char in string:
+            hashed = hashed * FNV_prime
+            hashed = hashed ^ char
+        return hashed
 
     def djb2(self, key):
         """
@@ -62,15 +76,17 @@ class HashTable:
 
         Implement this, and/or FNV-1.
         """
-        # Your code here
-
+        hash = 5381
+        for i in key:
+            hash = (hash * 33) + ord(i)
+        return hash
 
     def hash_index(self, key):
         """
         Take an arbitrary key and return a valid integer index
         between within the storage capacity of the hash table.
         """
-        #return self.fnv1(key) % self.capacity
+        # return self.fnv1(key) % self.capacity
         return self.djb2(key) % self.capacity
 
     def put(self, key, value):
@@ -80,9 +96,21 @@ class HashTable:
         Hash collisions should be handled with Linked List Chaining.
 
         Implement this.
-        """
-        # Your code here
 
+        Find the index for the key in the table
+        Look for a node with a key in the array/LL
+        If there is one add a node within the key and value to the arr/LL
+        """
+        index = self.hash_index(key)
+        node = HashTableEntry(key, value)
+        table = self.table[index]
+        self.size += 1
+
+        if table:
+            self.table[index] = node
+            self.table[index].next = table
+        else:
+            self.table[index] = node
 
     def delete(self, key):
         """
@@ -92,8 +120,11 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
-
+        if key is not None:
+            self.put(key, None)
+            self.size -= 1
+        else:
+            print("Key not found.")
 
     def get(self, key):
         """
@@ -102,9 +133,19 @@ class HashTable:
         Returns None if the key is not found.
 
         Implement this.
-        """
-        # Your code here
 
+        Looks for a node with key in the arr/LL
+        Returns the value in the node,
+        If there is no such node return None
+        """
+        index = self.hash_index(key)
+        table = self.table[index]
+
+        while table:
+            if table.key == key:
+                return table.value
+            table = table.next
+        return None
 
     def resize(self, new_capacity):
         """
@@ -113,8 +154,18 @@ class HashTable:
 
         Implement this.
         """
-        # Your code here
+        old_table = self.table
+        old_capacity = self.capacity
 
+        self.table = [None] * new_capacity
+        self.capacity = new_capacity
+
+        for index in range(old_capacity):
+            old = old_table[index]
+
+            while old != None:
+                self.put(old.key, old.value)
+                old = old.next
 
 
 if __name__ == "__main__":
